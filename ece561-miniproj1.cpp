@@ -33,13 +33,17 @@ void simulation(int numpkts, int lambda, int mu, double phi) {
     std::cout << "mu = " << mu << std::endl;
     std::cout << "phi = " << phi << std::endl; */
     std::random_device rd;
-    std::uniform_real_distribution<> uni_dis(0, 1);
-    std::poisson_distribution<> poisson(lambda);
-    std::exponential_distribution<> exponential(mu);
+    std::uniform_int_distribution u_dis(0, 100);
+    std::exponential_distribution<double> p_dist(lambda);
+    std::exponential_distribution<double> e_dist(mu);
 
-    std:: cout << uni_dis(gen) << std::endl;
-    std:: cout << poisson(gen) << std::endl;
-    std:: cout << exponential(gen) << std::endl;
+    phi = u_dis(rd);
+    arrival = p_dist(rd);
+    departure = e_dist(rd);
+
+    std:: cout << u_dis(rd) << ", " << phi << std::endl;
+    std:: cout << p_dist(rd) << ", " << arrival << std::endl;
+    std:: cout << e_dist(rd) << ", " << departure << std::endl;
 }
 
 int main() {
