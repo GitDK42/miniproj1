@@ -26,29 +26,28 @@ struct Packet {
  * mu: Exponentiail Process parameter for departure/service time
  * phi: Fixed probability packets are routed to first router upon arrival
  */
-void simulation(int numpkts, int lambda, int mu, double phi) {
+void simulation(int numpkts, int lambda, int mu, int phi) {
     // TODO: this
 /*    std::cout << "number of packets = " << numpkts << std::endl;
     std::cout << "lambda = " << lambda << std::endl;
     std::cout << "mu = " << mu << std::endl;
     std::cout << "phi = " << phi << std::endl; */
     std::random_device rd;
-    std::uniform_int_distribution u_dis(0, 100);
+    std::uniform_int_distribution<int> u_dist(0, 100);
     std::exponential_distribution<double> p_dist(lambda);
     std::exponential_distribution<double> e_dist(mu);
 
-    phi = u_dis(rd);
-    arrival = p_dist(rd);
-    departure = e_dist(rd);
+    int link = u_dist(rd);
+    double arrival = p_dist(rd);
+    double departure = e_dist(rd);
 
-    std:: cout << u_dis(rd) << ", " << phi << std::endl;
+    std:: cout << u_dist(rd) << ", " << phi << std::endl;
     std:: cout << p_dist(rd) << ", " << arrival << std::endl;
     std:: cout << e_dist(rd) << ", " << departure << std::endl;
 }
 
 int main() {
-    int numpkts, lambda, mu;
-    double phi;
+    int numpkts, lambda, mu, phi;
     std::cout << "Enter number of packets in simulation:";
     std::cin >> numpkts;
     std::cout << "Enter lambda value:";
