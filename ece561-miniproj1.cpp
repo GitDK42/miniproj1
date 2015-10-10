@@ -54,7 +54,7 @@ int main() {
     std::cout << "Enter phi value:";
     std::cin >> phi;
     simulation(numpkts, lambda, mu, phi);
-    std::priority_queue<Packet> test;
+   // std::priority_queue<Packet> test;
 
    return 0;
 }
