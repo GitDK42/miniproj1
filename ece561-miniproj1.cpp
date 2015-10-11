@@ -76,7 +76,7 @@ int main() {
     //simulation(numpkts, lambda, mu, phi);
     */
     // testing priority queue stuff
- //   std::priority_queue<Packet> test(std::greater<Packet>());
+ //   std::priority_queue<Packet> test;
     std::priority_queue<Packet, std::vector<Packet>, std::greater<Packet>> test; 
     Packet p1(5, 2.3, 4.1, 5.7);
     Packet p2(6, 2, 1.3, 6.2);
@@ -88,13 +88,14 @@ int main() {
     std::cout << test.size() << std::endl;
     
     std::cout << test.empty() << std::endl;
-    std::cout << test.top().id << std::endl;
+    std::cout << test.top().t_serv << std::endl;
     test.pop();
-    std::cout << test.top().id << std::endl;
+    std::cout << test.top().t_serv << std::endl;
     std::cout << test.size() << std::endl;
     test.pop();
     std::cout << test.empty() << std::endl;
-    
+    std::cout << (p1 > p2) << std::endl;
+
     return 0;
 }
 
