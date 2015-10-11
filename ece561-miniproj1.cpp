@@ -85,8 +85,8 @@ double getServTime(int mu) {
 void simulation() {
     // TODO: this
     // define system parameters
-    int numpkts, lambda, mu, phi, size;
-    std::cout << "Enter number of packets in simulation: ";
+    int numpkts=5500, lambda=8, mu=5, phi=20, size=20;
+/*    std::cout << "Enter number of packets in simulation: ";
     std::cin >> numpkts;
     std::cout << "Enter lambda value: ";
     std::cin >> lambda;
@@ -96,22 +96,26 @@ void simulation() {
     std::cin >> phi;
     std::cout << "Enter buffer size: ";
     std::cin >> size;
-
+*/
     // create event list and buffers
     std::priority_queue<Packet, std::vector<Packet>, std::greater<Packet>> eventList;
     std::queue<Packet> b1, b2;
     
     // define system information variables
-    double t_sys = 0;         // system time
-    double delay1, delay2;    // delay variables for buffers
-    int link1, link2;         // number of packets passing through.
-    int numBlock1, numBlock2; // number of packets blocked 
-    int pktSent;              // number of packets sent
+    double t_sys = 0;            // system time
+    double delay1=0, delay2=0;   // delay variables for buffers
+    int link1=0, link2=0;        // number of packets passing through.
+    int numBlock1=0, numBlock2=0;// number of packets blocked 
+    int pktSent = 0;             // number of packets sent
 
     // begin simulation
     // ignore first X pkts (X >= 500 for 5500 sent)
-    int X = 500;
-    while(pktSent <= X) {
+    int x = 500;
+    std::cout << "before ignore while" << std::endl;
+    int loopNum = 0;
+    while(pktSent <= x-1) {
+        std::cout << "loop number: " << loopNum << std::endl;
+        loopNum++;
         // new packet enters event list
         Packet p(pickLink(phi), getArrivalTime(lambda)+t_sys, getServTime(mu));
         eventList.push(p);
@@ -132,7 +136,6 @@ void simulation() {
                     // update event list
                     b1.back().t_event = b1.back().t_depart;
                 } else {
-                    numBlock1++;     // incr. pkts blocked by b1
                     eventList.pop(); // update event list.
                 }
             } // determine if buffer is full
@@ -147,7 +150,6 @@ void simulation() {
                     // update event list
                     b2.back().t_event = b2.back().t_depart;
                 } else {
-                    numBlock2++;     // incr. pkts blocked by b2
                     eventList.pop(); // update event list.
                 }
         }
@@ -159,20 +161,98 @@ void simulation() {
                 t_sys = b1.front().t_depart; // update system time
                 b1.pop();                    // update buffer
                 eventList.pop();             // update event list
-                link1++;                     // incr. # pkts passed
             } else {
                 delay2 -= b2.front().t_serv; // update buffer delay
                 t_sys = b2.front().t_depart; // update system time
                 b2.pop();                    // update buffer
                 eventList.pop();             // update event list
-                link2++;                     // incr. # pkts passed
             }
         }
     } // end of while loop
 
+    std::cout << "packets sent: " << pktSent << std::endl;
 
     // tracked simulation
-    
+    while(!eventList.empty()) {
+       if(pktSent < numpkts) {   
+           // new packet enters event list
+           Packet p(pickLink(phi), getArrivalTime(lambda)+t_sys, getServTime(mu));
+           eventList.push(p);
+           pktSent++;            // increment number of packets sent
+       }
+       // determine if next event is arriving or departing packet
+       if (eventList.top().arriving) {
+           // determine link to send arriving packet to.
+           if(eventList.top().link) {
+               // determine if buffer is full
+               if (b1.size() < size) {
+                   b1.push(eventList.top());   // push pkt to buffer
+                   delay1 += b1.back().t_serv; // update buffer delay
+                   t_sys = b1.back().t_arrive; // update system time
+                   // calculate departure time of pkt.
+                   b1.back().t_depart = delay1 + t_sys;
+                   // change from arriving to departing
+                   b1.back().arriving = false;
+                   // update event list
+                   b1.back().t_event = b1.back().t_depart;
+               } else {
+                   numBlock1++;     // incr. pkts blocked by b1
+                   eventList.pop(); // update event list.
+               }
+           } // determine if buffer is full
+           else if (b2.size() < size) {
+                   b2.push(eventList.top());   // push pkt to buffer
+                   delay2 += b2.back().t_serv; // update buffer delay
+                   t_sys = b2.back().t_arrive; // update system time
+                   // calculate departure time of pkt.
+                   b2.back().t_depart = delay2 + t_sys;
+                   // change from arriving to departing
+                   b1.back().arriving = false;
+                   // update event list
+                   b2.back().t_event = b2.back().t_depart;
+               } else {
+                   numBlock2++;     // incr. pkts blocked by b2
+                   eventList.pop(); // update event list.
+               }
+       }
+       // else packet is departing
+       else {
+           // determine link departing from.
+           if(eventList.top().link) {
+               delay1 -= b1.front().t_serv; // update buffer delay
+               t_sys = b1.front().t_depart; // update system time
+               b1.pop();                    // update buffer
+               eventList.pop();             // update event list
+               link1++;                     // incr. # pkts passed
+           } else {
+               delay2 -= b2.front().t_serv; // update buffer delay
+               t_sys = b2.front().t_depart; // update system time
+               b2.pop();                    // update buffer
+               eventList.pop();             // update event list
+               link2++;                     // incr. # pkts passed
+           }
+       }
+    } // end of while loop
+
+    std::cout << pktSent << std::endl;
+    int totalBlocked = numBlock1 + numBlock2;
+    int total_1 = link1 + numBlock1;        // total sent to link 1
+    int total_2 = link2 + numBlock2;        // total sent to link 2
+    int total_sys = link1 + link2;          // total sent through sys
+
+    std::cout << "blocked 1: " << numBlock1 << std::endl;
+    std::cout << "link 1: " << link1 << std::endl;
+
+    std::cout << "blocked 2: " << numBlock2 << std::endl;
+    std::cout << "link 2: " << link2 << std::endl;
+    double sys_pb = totalBlocked/total_sys; // Pb for system
+    double link1_pb = numBlock1/link1;      // Pb for link 2
+    double link2_pb = numBlock2/link2;      // Pb for link 1
+   
+    std::cout << "Blocking Probability of Sys: " <<  sys_pb << std::endl;
+    std::cout << "Blocking Probability of L1: " << link1_pb << std::endl;
+    std::cout << "Blocking Probability of L2: " << link2_pb << std::endl;
+
 }
 
 int main() {
