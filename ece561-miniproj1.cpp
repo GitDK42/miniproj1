@@ -18,7 +18,15 @@ struct Packet {
     double t_serv;
     double t_arrive;
     double t_depart;
+    Packet (int, double, double, double);
 };
+
+Packet::Packet(int id, double t_serv, double t_arrive, double t_depart) {
+    this.id = id;
+    this.t_serv = t_serv;
+    this.t_arrive = t_arrive;
+    this.t_depart = t_depart;
+}
 
 /* Fucntion for the actual simulation. Upon arrival packets are routed to Router 1 or Router 2. If a packet is already being serviced at that router, placed in queue. 
  * numpkts: Number of packets sent in simulation
@@ -48,16 +56,21 @@ void simulation(int numpkts, int lambda, int mu, int phi) {
 
 int main() {
     int numpkts, lambda, mu, phi;
-    std::cout << "Enter number of packets in simulation:";
+    std::cout << "Enter number of packets in simulation: ";
     std::cin >> numpkts;
-    std::cout << "Enter lambda value:";
+    std::cout << "Enter lambda value: ";
     std::cin >> lambda;
-    std::cout << "Enter mu value:";
+    std::cout << "Enter mu value: ";
     std::cin >> mu;
-    std::cout << "Enter phi value:";
+    std::cout << "Enter phi value: ";
     std::cin >> phi;
     simulation(numpkts, lambda, mu, phi);
-   // std::priority_queue<Packet> test;
+   /* bool Packet::operator<(const Packet& t_serv) {
+        return(t_serv > Packet.t_serv);
+    }
+    std::priority_queue<Packet> test;*/
+
+    Packet p = new Packet(5, 2.3, 4.1, 5.7);
 
    return 0;
 }
