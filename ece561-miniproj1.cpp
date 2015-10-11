@@ -18,14 +18,22 @@ struct Packet {
     double t_serv;
     double t_arrive;
     double t_depart;
+    // constructor for creating packets
     Packet (int, double, double, double);
+    // overload < and > operators to use packets in priority_queue
+    bool operator< (const Packet& other) const {
+        return this->t_serv < other.t_serv;
+    }
+    bool operator> (const Packet& other) const {
+        return this->t_serv > other.t_serv;
+    }
 };
 
 Packet::Packet(int id, double t_serv, double t_arrive, double t_depart) {
-    this.id = id;
-    this.t_serv = t_serv;
-    this.t_arrive = t_arrive;
-    this.t_depart = t_depart;
+    this->id = id;
+    this->t_serv = t_serv;
+    this->t_arrive = t_arrive;
+    this->t_depart = t_depart;
 }
 
 /* Fucntion for the actual simulation. Upon arrival packets are routed to Router 1 or Router 2. If a packet is already being serviced at that router, placed in queue. 
@@ -56,7 +64,7 @@ void simulation(int numpkts, int lambda, int mu, int phi) {
 
 int main() {
     int numpkts, lambda, mu, phi;
-    std::cout << "Enter number of packets in simulation: ";
+   /* std::cout << "Enter number of packets in simulation: ";
     std::cin >> numpkts;
     std::cout << "Enter lambda value: ";
     std::cin >> lambda;
@@ -64,14 +72,27 @@ int main() {
     std::cin >> mu;
     std::cout << "Enter phi value: ";
     std::cin >> phi;
-    simulation(numpkts, lambda, mu, phi);
-   /* bool Packet::operator<(const Packet& t_serv) {
-        return(t_serv > Packet.t_serv);
-    }
-    std::priority_queue<Packet> test;*/
-
-    Packet p = new Packet(5, 2.3, 4.1, 5.7);
-
-   return 0;
+    //simulation(numpkts, lambda, mu, phi);
+    */
+    // testing priority queue stuff
+    std::priority_queue<Packet> test(std::greater<Packet>());
+    Packet p1(5, 2.3, 4.1, 5.7);
+    Packet p2(6, 2, 1.3, 6.2);
+    
+    std::cout << test.size() << std::endl;
+/*    test.push(p1);
+    std::cout << test.size() << std::endl;
+    test.push(p2);
+    std::cout << test.size() << std::endl;
+    
+    std::cout << test.empty() << std::endl;
+    std::cout << test.top().id << std::endl;
+    test.pop();
+    std::cout << test.top().id << std::endl;
+    std::cout << test.size() << std::endl;
+    test.pop();
+    std::cout << test.empty() << std::endl;
+ */   
+    return 0;
 }
 
