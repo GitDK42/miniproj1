@@ -8,6 +8,7 @@
 #include <queue>
 #include <functional>
 #include <random>
+#include <vector>
 
 /* Struct for the packets being sent through the system.
  * num: Integer representing the packet number (e.g. 500th packet)
@@ -75,12 +76,13 @@ int main() {
     //simulation(numpkts, lambda, mu, phi);
     */
     // testing priority queue stuff
-    std::priority_queue<Packet> test(std::greater<Packet>());
+ //   std::priority_queue<Packet> test(std::greater<Packet>());
+    std::priority_queue<Packet, std::vector<Packet>, std::greater<Packet>> test; 
     Packet p1(5, 2.3, 4.1, 5.7);
     Packet p2(6, 2, 1.3, 6.2);
     
     std::cout << test.size() << std::endl;
-/*    test.push(p1);
+    test.push(p1);
     std::cout << test.size() << std::endl;
     test.push(p2);
     std::cout << test.size() << std::endl;
@@ -92,7 +94,7 @@ int main() {
     std::cout << test.size() << std::endl;
     test.pop();
     std::cout << test.empty() << std::endl;
- */   
+    
     return 0;
 }
 
