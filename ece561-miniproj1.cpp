@@ -11,8 +11,12 @@
 #include <vector>
 
 /* Struct for the packets being sent through the system.
- * num: Integer representing the packet number (e.g. 500th packet)
+ * t_arrive: time of arrival of packet
  * t_serv: Exp. generated random variable represeting time spent processinng packet/size of packet.
+ * t_depart: time of departure of packet
+ * t_event: time this packet's next event will occur (arrive/depart)
+ * link: boolean value to indicate if packet is routed to link 1 (true) or link 2 (false)
+ * arriving: boolean value to indicate if packet is arriving/departing
  */
 struct Packet {
     double t_arrive;
@@ -123,32 +127,45 @@ void simulation() {
         // determine if next event is arriving or departing packet
         if (eventList.top().arriving) {
             // determine link to send arriving packet to.
+            std::cout << "packet incoming!" << std::endl;
             if(eventList.top().link) {
+                std::cout << "arrival at link 1!" << std::endl;
                 // determine if buffer is full
                 if (b1.size() < size) {
-                    b1.push(eventList.top());   // push pkt to buffer
-                    delay1 += b1.back().t_serv; // update buffer delay
-                    t_sys = b1.back().t_arrive; // update system time
+                    std::cout << "space available!" << std::endl;
+                    Packet temp = eventList.top();
+                    delay1 += temp.t_serv; // update buffer delay
+                    t_sys = temp.t_arrive; // update system time
                     // calculate departure time of pkt.
-                    b1.back().t_depart = delay1 + t_sys;
+                    temp.t_depart = delay1 + t_sys;
                     // change from arriving to departing
-                    b1.back().arriving = false;
+                    temp.arriving = false;
                     // update event list
-                    b1.back().t_event = b1.back().t_depart;
+                    temp.t_event = temp.t_depart;
+                    eventList.pop();
+                    eventList.push(temp);
+                    // add packet to buffer
+                    b1.push(temp);   // push pkt to buffer
                 } else {
+                    std::cout << "we're blocked!" << std::endl;
                     eventList.pop(); // update event list.
                 }
             } // determine if buffer is full
             else if (b2.size() < size) {
-                    b2.push(eventList.top());   // push pkt to buffer
-                    delay2 += b2.back().t_serv; // update buffer delay
-                    t_sys = b2.back().t_arrive; // update system time
+                 std::cout << "arrival at link 2!" << std::endl;
+                 Packet temp = eventList.top();
+                    delay2 += temp.t_serv; // update buffer delay
+                    t_sys = temp.t_arrive; // update system time
                     // calculate departure time of pkt.
-                    b2.back().t_depart = delay2 + t_sys;
+                    temp.t_depart = delay2 + t_sys;
                     // change from arriving to departing
-                    b1.back().arriving = false;
+                    temp.arriving = false;
                     // update event list
-                    b2.back().t_event = b2.back().t_depart;
+                    temp.t_event = temp.t_depart;
+                    eventList.pop();
+                    eventList.push(temp);
+                    // add packet to buffer
+                    b2.push(temp);   // push pkt to buffer
                 } else {
                     eventList.pop(); // update event list.
                 }
@@ -157,13 +174,15 @@ void simulation() {
         else {
             // determine link departing from.
             if(eventList.top().link) {
-                delay1 -= b1.front().t_serv; // update buffer delay
-                t_sys = b1.front().t_depart; // update system time
+                Packet temp = eventList.top();
+                delay1 -= temp.t_serv;       // update buffer delay
+                t_sys = temp.t_depart;       // update system time
                 b1.pop();                    // update buffer
                 eventList.pop();             // update event list
             } else {
-                delay2 -= b2.front().t_serv; // update buffer delay
-                t_sys = b2.front().t_depart; // update system time
+                Packet temp = eventList.top();
+                delay2 -= temp.t_serv;       // update buffer delay
+                t_sys = temp.t_depart;       // update system time
                 b2.pop();                    // update buffer
                 eventList.pop();             // update event list
             }
@@ -186,30 +205,38 @@ void simulation() {
            if(eventList.top().link) {
                // determine if buffer is full
                if (b1.size() < size) {
-                   b1.push(eventList.top());   // push pkt to buffer
-                   delay1 += b1.back().t_serv; // update buffer delay
-                   t_sys = b1.back().t_arrive; // update system time
+                   Packet temp = eventList.top();
+                   delay1 += temp.t_serv; // update buffer delay
+                   t_sys = temp.t_arrive; // update system time
                    // calculate departure time of pkt.
-                   b1.back().t_depart = delay1 + t_sys;
+                   temp.t_depart = delay1 + t_sys;
                    // change from arriving to departing
-                   b1.back().arriving = false;
+                   temp.arriving = false;
                    // update event list
-                   b1.back().t_event = b1.back().t_depart;
+                   temp.t_event = temp.t_depart;
+                   eventList.pop();
+                   eventList.push(temp);
+                   // add packet to buffer
+                   b1.push(temp); // push pkt to buffer
                } else {
                    numBlock1++;     // incr. pkts blocked by b1
                    eventList.pop(); // update event list.
                }
            } // determine if buffer is full
            else if (b2.size() < size) {
-                   b2.push(eventList.top());   // push pkt to buffer
-                   delay2 += b2.back().t_serv; // update buffer delay
-                   t_sys = b2.back().t_arrive; // update system time
+                   Packet temp = eventList.top();
+                   delay2 += temp.t_serv; // update buffer delay
+                   t_sys = temp.t_arrive; // update system time
                    // calculate departure time of pkt.
-                   b2.back().t_depart = delay2 + t_sys;
+                   temp.t_depart = delay2 + t_sys;
                    // change from arriving to departing
-                   b1.back().arriving = false;
+                   temp.arriving = false;
                    // update event list
-                   b2.back().t_event = b2.back().t_depart;
+                   temp.t_event = temp.t_depart;
+                   eventList.pop();
+                   eventList.push(temp);
+                   // add packet to buffer
+                   b2.push(temp); // push pkt to buffer
                } else {
                    numBlock2++;     // incr. pkts blocked by b2
                    eventList.pop(); // update event list.
@@ -219,14 +246,16 @@ void simulation() {
        else {
            // determine link departing from.
            if(eventList.top().link) {
-               delay1 -= b1.front().t_serv; // update buffer delay
-               t_sys = b1.front().t_depart; // update system time
+               Packet temp = eventList.top();
+               delay1 -= temp.t_serv;       // update buffer delay
+               t_sys = temp.t_depart;       // update system time
                b1.pop();                    // update buffer
                eventList.pop();             // update event list
                link1++;                     // incr. # pkts passed
            } else {
-               delay2 -= b2.front().t_serv; // update buffer delay
-               t_sys = b2.front().t_depart; // update system time
+               Packet temp = eventList.top();
+               delay2 -= temp.t_serv;       // update buffer delay
+               t_sys = temp.t_depart;       // update system time
                b2.pop();                    // update buffer
                eventList.pop();             // update event list
                link2++;                     // incr. # pkts passed
