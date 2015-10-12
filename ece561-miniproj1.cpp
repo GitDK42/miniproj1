@@ -93,7 +93,6 @@ double getServTime(int mu) {
  * phi: Fixed probability packets are routed to first router upon arrival
  */
 void simulation() {
-    // TODO: this
     // define system parameters
     int numpkts=10500, lambda=8, mu=5, phi=50, size=20;
 /*    std::cout << "Enter number of packets in simulation: ";
@@ -201,8 +200,6 @@ void simulation() {
         }
     } // end of while loop
 
-    std::cout << "packets sent: " << pktSent << std::endl;
-
 // ----------------------- BEGIN TRACKED ---------------------------//
     avgDelay1 = delay1;
     avgDelay2 = delay2;
@@ -287,31 +284,51 @@ void simulation() {
 
     } // end of while loop
 
-    std::cout << pktSent << std::endl;
     int totalBlocked = numBlock1 + numBlock2;
     int total_1 = link1 + numBlock1;        // total sent to link 1
     int total_2 = link2 + numBlock2;        // total sent to link 2
     int total_sys = link1 + link2;          // total sent through sys
     int total_sent = totalBlocked + total_sys;
 
-    std::cout << "blocked 1: " << numBlock1 << std::endl;
-    std::cout << "total 1: " << total_1<< std::endl;
-
-    std::cout << "blocked 2: " << numBlock2 << std::endl;
-    std::cout << "total 2: " << total_2<< std::endl;
     double sys_pb = (double)totalBlocked/total_sent; // Pb for system
     double link1_pb = (double)numBlock1/total_1;      // Pb for link 2
     double link2_pb = (double)numBlock2/total_2;      // Pb for link 1
-   
-    std::cout << "Blocking Probability of Sys: " <<  sys_pb*100 << std::endl;
-    std::cout << "Blocking Probability of L1: " << link1_pb*100 << std::endl;
-    std::cout << "Blocking Probability of L2: " << link2_pb*100 << std::endl;
+    double avgSysDelay = (avgDelay1+avgDelay2)/2;
 
-    std::cout << "Avg delay in 1: " << avgDelay1 << std::endl;
-    std::cout << "Avg delay in 2: " << avgDelay2 << std::endl;
-    std::cout << "Avg pkts in 1: " << avgPkts1 << std::endl;
-    std::cout << "Avg pkts in 2: " << avgPkts2 << std::endl;
-    std::cout << "System end time: " << t_sys << std::endl;
+    double throughput1 = link1/t_sys;
+    double throughput2 = link2/t_sys;
+    double throughputSys = throughput1+throughput2;
+    printf("|============================================|\n");
+    printf("|=============SIMULATION RESULTS=============|\n");
+    printf("|============================================|\n\n");
+    printf("System Parameters:\n");
+    printf(" Arrival rate lambda: %i\n", lambda);
+    printf(" Departure rate mu:   %i\n", mu);
+    printf(" Buffer sizes (both): %i\n\n", size);
+    printf(" Total Sent    :  %i\n", numpkts);
+    printf(" Packets Ignored: %i\n", x);
+    printf(" Total duration:  %f seconds\n\n", t_sys);
+
+    printf("Link 1 Statistics (phi = %i\%): \n", phi);
+    printf(" Total Blocked:        %i\n", numBlock1);
+    printf(" Total Arrivals:       %i\n", total_1);
+    printf(" Blocking Probability: %f\% \n", link1_pb*100);
+    printf(" Average Delay Time:   %f seconds\n", avgDelay1);
+    printf(" Throughput:           %f pkts/s\n", throughput1); 
+
+    printf("\nLink 2 Statistics (phi = %i\%): \n", 100-phi);
+    printf(" Total Blocked:        %i\n", numBlock2);
+    printf(" Total Arrivals:       %i\n", total_2);
+    printf(" Blocking Probability: %f\% \n", link2_pb*100);
+    printf(" Average Delay Time:   %f seconds\n", avgDelay2);
+    printf(" Throughput:           %f pkts/s\n", throughput2); 
+
+    printf("\nSystem Statistics: \n");
+    printf(" Total Blocked:        %i\n", totalBlocked);
+    printf(" Total Arrivals:       %i\n", total_sent);
+    printf(" Blocking Probability: %f\% \n", sys_pb*100);
+    printf(" Average Delay Time:   %f seconds\n", avgSysDelay);
+    printf(" Throughput:           %f pkts/s\n", throughputSys); 
 
 }
 
