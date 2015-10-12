@@ -43,7 +43,13 @@ Packet::Packet(bool link, double t_arrive, double t_serv) {
     this->link = link;   // true = link 1
     this->arriving = true;
 }
+double approxRollingAvg (double avg, double new_sample) {
+    
+    avg -= avg / 10;
+    avg += new_sample / 10;
 
+    return avg;
+}
 /* Function to decide which router new packet is sent to
  *
  */
@@ -89,7 +95,7 @@ double getServTime(int mu) {
 void simulation() {
     // TODO: this
     // define system parameters
-    int numpkts=5500, lambda=8, mu=5, phi=50, size=20;
+    int numpkts=10500, lambda=8, mu=5, phi=50, size=20;
 /*    std::cout << "Enter number of packets in simulation: ";
     std::cin >> numpkts;
     std::cout << "Enter lambda value: ";
@@ -118,23 +124,27 @@ void simulation() {
     int x = 500;
 //    std::cout << "before ignore while" << std::endl;
     int loopNum = 0;
+    double avg_p=0;
+    double avg_e=0;
     while(pktSent <= x-1) {
 //        std::cout << "loop number: " << loopNum << std::endl;
         loopNum++;
-        // new packet enters event list
-        Packet p(pickLink(phi), getArrivalTime(lambda)+t_sys, getServTime(mu));
-        eventList.push(p);
-        pktSent++;              // increment number of packets sent
+        if (pktSent == 0) {
+            Packet p(pickLink(phi), getArrivalTime(lambda)+t_sys, getServTime(mu));
+            eventList.push(p);
+            pktSent++;             // increment number of packets sent
+        }
+ 
+        Packet temp = eventList.top();
         // determine if next event is arriving or departing packet
-        if (eventList.top().arriving) {
+        if (temp.arriving) {
             // determine link to send arriving packet to.
 //            std::cout << "packet incoming!" << std::endl;
-            if(eventList.top().link) {
+            if(temp.link) {
 //                std::cout << "arrival at link 1!" << std::endl;
                 // determine if buffer is full
-                if (b1.size() < size) {
+                if (b1.size() < size+1) {
 //                    std::cout << "space available!" << std::endl;
-                    Packet temp = eventList.top();
                     delay1 += temp.t_serv; // update buffer delay
                     t_sys = temp.t_arrive; // update system time
                     // calculate departure time of pkt.
@@ -152,9 +162,8 @@ void simulation() {
                     eventList.pop(); // update event list.
                 }
             } // determine if buffer is full
-            else if (b2.size() < size) {
+            else if (b2.size() < size+1) {
 //                 std::cout << "arrival at link 2!" << std::endl;
-                 Packet temp = eventList.top();
                     delay2 += temp.t_serv; // update buffer delay
                     t_sys = temp.t_arrive; // update system time
                     // calculate departure time of pkt.
@@ -170,18 +179,20 @@ void simulation() {
                 } else {
                     eventList.pop(); // update event list.
                 }
+            // new packet enters event list
+            Packet p(pickLink(phi), getArrivalTime(lambda)+t_sys, getServTime(mu));
+            eventList.push(p);
+            pktSent++;             // increment number of packets sent
         }
         // else packet is departing
         else {
             // determine link departing from.
-            if(eventList.top().link) {
-                Packet temp = eventList.top();
+            if(temp.link) {
                 delay1 -= temp.t_serv;       // update buffer delay
                 t_sys = temp.t_depart;       // update system time
                 b1.pop();                    // update buffer
                 eventList.pop();             // update event list
             } else {
-                Packet temp = eventList.top();
                 delay2 -= temp.t_serv;       // update buffer delay
                 t_sys = temp.t_depart;       // update system time
                 b2.pop();                    // update buffer
@@ -197,22 +208,18 @@ void simulation() {
     avgDelay2 = delay2;
     avgPkts1 = b1.size();
     avgPkts2 = b2.size();
+    int loopCount = 0;
 
     // tracked simulation
     while(!eventList.empty()) {
-       if(pktSent < numpkts) {   
-           // new packet enters event list
-           Packet p(pickLink(phi), getArrivalTime(lambda)+t_sys, getServTime(mu));
-           eventList.push(p);
-           pktSent++;            // increment number of packets sent
-       }
+        loopCount++;
+        Packet temp = eventList.top();
        // determine if next event is arriving or departing packet
-       if (eventList.top().arriving) {
+       if (temp.arriving) {
            // determine link to send arriving packet to.
-           if(eventList.top().link) {
+           if(temp.link) {
                // determine if buffer is full
-               if (b1.size() < size) {
-                   Packet temp = eventList.top();
+               if (b1.size() < size+1) {
                    delay1 += temp.t_serv; // update buffer delay
                    t_sys = temp.t_arrive; // update system time
                    // calculate departure time of pkt.
@@ -230,8 +237,7 @@ void simulation() {
                    eventList.pop(); // update event list.
                }
            } // determine if buffer is full
-           else if (b2.size() < size) {
-                   Packet temp = eventList.top();
+           else if (b2.size() < size+1) {
                    delay2 += temp.t_serv; // update buffer delay
                    t_sys = temp.t_arrive; // update system time
                    // calculate departure time of pkt.
@@ -248,19 +254,23 @@ void simulation() {
                    numBlock2++;     // incr. pkts blocked by b2
                    eventList.pop(); // update event list.
                }
+            if(pktSent < numpkts) {   
+                // new packet enters event list
+                Packet p(pickLink(phi), getArrivalTime(lambda)+t_sys, getServTime(mu));
+                eventList.push(p);
+                pktSent++;            // increment number of packets sent
+            }
        }
        // else packet is departing
        else {
            // determine link departing from.
-           if(eventList.top().link) {
-               Packet temp = eventList.top();
+           if(temp.link) {
                delay1 -= temp.t_serv;       // update buffer delay
                t_sys = temp.t_depart;       // update system time
                b1.pop();                    // update buffer
                eventList.pop();             // update event list
                link1++;                     // incr. # pkts passed
            } else {
-               Packet temp = eventList.top();
                delay2 -= temp.t_serv;       // update buffer delay
                t_sys = temp.t_depart;       // update system time
                b2.pop();                    // update buffer
@@ -268,10 +278,13 @@ void simulation() {
                link2++;                     // incr. # pkts passed
            }
        }
-       avgDelay1 = (avgDelay1+delay1)/2;
-       avgDelay2 = (avgDelay2+delay2)/2;
-       avgPkts1 = (avgPkts1+b1.size())/2;
-       avgPkts2 = (avgPkts2+b2.size())/2;
+       if (loopCount%10 == 0) {
+           avgPkts1 = approxRollingAvg(avgPkts1, b1.size());
+           avgPkts2 = approxRollingAvg(avgPkts2, b2.size());
+           avgDelay1 = approxRollingAvg(avgDelay1, delay1);
+           avgDelay2 = approxRollingAvg(avgDelay2, delay2);
+       }
+
     } // end of while loop
 
     std::cout << pktSent << std::endl;
@@ -290,9 +303,9 @@ void simulation() {
     double link1_pb = (double)numBlock1/total_1;      // Pb for link 2
     double link2_pb = (double)numBlock2/total_2;      // Pb for link 1
    
-    std::cout << "Blocking Probability of Sys: " <<  sys_pb << std::endl;
-    std::cout << "Blocking Probability of L1: " << link1_pb << std::endl;
-    std::cout << "Blocking Probability of L2: " << link2_pb << std::endl;
+    std::cout << "Blocking Probability of Sys: " <<  sys_pb*100 << std::endl;
+    std::cout << "Blocking Probability of L1: " << link1_pb*100 << std::endl;
+    std::cout << "Blocking Probability of L2: " << link2_pb*100 << std::endl;
 
     std::cout << "Avg delay in 1: " << avgDelay1 << std::endl;
     std::cout << "Avg delay in 2: " << avgDelay2 << std::endl;
